@@ -267,3 +267,320 @@ mt-swipe :auto="2000">
         </div>
 ```
 
+# 4.新闻列表
+
+1.首先在components文件下新建一个news文件，在新建一个newsList。vue
+
+2.在router.js中导入和配置
+
+3 在mui中找到图文列表，将样式拷贝来使用
+
+4.可以使用axios来获取后台的数据，同时设置全局的url
+
+```
+import axios from 'axios'
+axios.defaults.baseURL='http://www.liulongbin.top:3005/';
+Vue.prototype.$axios = axios ;
+```
+
+5.渲染数据
+
+```
+export default {
+        name: "newsList",
+        data(){
+            return {
+                newsList:[]
+            }
+        },
+        created(){
+            this.getNewsList();
+        },
+        methods:{
+            getNewsList(){
+                this.$axios.get('api/getnewslist')
+                    .then(result => {
+                        if(result.data.status === 0){
+                            this.newsList = result.data.message;
+                        }
+                    })
+            }
+        }
+    }
+```
+
+6.从后台得到的时间格式，并不符合要求，同时对于时间在其他的页面也会多次用到，此时，需要使用全局的过滤器。
+
+使用moment.js这个处理时间的插件。运行npm i moment
+
+7 导入文件，配置
+
+```
+import moment from 'moment'
+Vue.filter('dateFormat',function(dataStr,partner = "YYYY-MM-DD HH:mm:ss"){
+    return moment(dataStr).format(partner);
+})
+
+ <span>发表时间：{{item.add_time | dateFormat("YYYY-MM-DD")}}</span>
+```
+
+# 5.新闻详情
+
+1.新建文件newsInfo.vue
+
+2.新闻详情需要点击新闻列表时，将id传过来
+
+```
+ <router-link :to="'/home/newsInfo/'+item.id">
+ 
+  {path:'/home/newsInfo/:id',component:NewsInfo},
+```
+
+
+
+3.新闻详情的数据是个对象
+
+```
+data(){
+            return {
+                id:this.$route.params.id,
+                newsInfo:{}
+            }
+        },
+        created(){
+            this.getNewsInfo();
+        },
+        methods:{
+            getNewsInfo(){
+                this.$axios.get('api/getnew/'+this.id)
+                    .then(result => {
+                        if(result.data.status === 0){
+                            this.newsInfo = result.data.message[0]
+                        }
+                    })
+            }
+        }
+```
+
+4.评论。使用父子组件来传参，最好封装，之后还会使用。
+
+新建common文件夹，里面有comment。js文件。在父组件里导入和注册。
+
+```
+import comment from '../common/comment.vue'
+    export default {
+        name: "newsInfo",
+        components:{
+            comment
+        },
+        
+        //绑定id
+         <comment :cmtid="id"></comment>
+```
+
+在comment.veu中进行数据的获取和渲染
+
+```
+<div class="cmt_list">
+            <div v-for="(item,index) in comments" :key="item.id" class="cmt_item">
+                <div class="cmt_title">
+                    第{{index+1}}楼 用户：{{item.user_name}}
+                    发表时间：{{item.add_time | dateFormat}}
+                </div>
+                <div class="cmt_body">
+                    {{item.content}}
+                </div>
+            </div>
+            <!---->
+        </div>
+        
+        /*获取数据库中的数据*/
+            getComments(){
+                this.$axios.get('api/getcomments/'+this.cmtid+'?pageindex='+this.index)
+                    .then(result => {
+                        if(result.data.status === 0){
+                            this.comments = this.comments.concat(result.data.message);
+                        }
+                    })
+            },
+```
+
+还需要提交数据
+
+```
+ /*提交数据*/
+            postComments(){
+                this.$axios.post('/api/postcomment/'+this.cmtid,{content:this.content})
+                    .then(result => {
+                        if(result.data.status === 0){
+                            this.getComments();
+                            this.content='';
+                        }
+                    })
+            },
+```
+
+# 6.图片列表
+
+1.新建文件photos，里面有photoList.vue,再是配置路由。在mui中找到顶部选项卡-可左右拖动，复制样式，同时加入mui的区域滚动，需要导入mui的js和初始化
+
+```
+import mui from '../../lib/mui/js/mui.min.js'
+    export default {
+        name: "photoList",
+        mounted(){
+            mui('.mui-scroll-wrapper').scroll({
+                deceleration: 0.0005 //flick 减速系数，系数越大，滚动速度越慢，滚动距离越小，默认值0.0006
+            });
+        },
+```
+
+2.这是会有严格模式的报错，mui中的celler无法使用，这时选择在webpack中移除严格模式。运行 npm i babel-plugin-transform-remove-strict-mode,还有barbel文件
+
+```
+"plugins": ["transform-remove-strict-mode","transform-runtime",["component", [
+    {
+      "libraryName": "mint-ui",
+      "style": true
+    }
+  ]]]
+}
+```
+
+能够运行之后，发现下方的导航有错误，这时，需要将导航里面的类进行修改，找到css后，复制再换的类名。
+
+3.渲染顶部
+
+```
+ <!--顶部滑动区域-->
+        <div class="mui-content">
+            <div id="slider" class="mui-slider" data-slider="4">
+                <div id="sliderSegmentedControl" class="mui-slider-indicator mui-segmented-control
+                mui-segmented-control-inverted  mui-scroll-wrapper">
+
+                        <div class="mui-scroll">
+                            <!--这里放置真实显示的DOM内容-->
+                            <a  v-for="(item,index) in cates" :key="item.id" >
+                                {{item.title}}
+                            </a>
+                        </div>
+                </div>
+            </div>
+            
+            getAllCategory(){
+                this.$axios.get('/api/getimgcategory')
+                    .then(result => {
+                        if(result.data.status === 0){
+                            result.data.message.unshift({title:"全部",id:0});
+                            this.cates = result.data.message
+                        }
+                    })
+            },
+```
+
+4.要点击不同的主题时，获取id，再根据id来渲染图片的数据
+
+```
+<a @click="getPhotoList(item.id)" v-for="(item,index) in cates" :key="item.id" >
+                                {{item.title}}
+                            </a>
+                            
+getPhotoList(cateId){
+                this.$axios.get('api/getimages/'+cateId)
+                    .then( result => {
+                        if(result.data.status === 0){
+                            this.list = result.data.message
+                        }
+                    })
+            }
+```
+
+5.提示性能，对于图片使用懒加载，需要用到mint-ui
+
+```
+<img v-lazy="item.img_url">
+
+img[lazy=loading] {
+    width: 40px;
+    height: 300px;
+    margin: auto;
+}
+```
+
+# 7.图文详情
+
+1.新建文件photoInfo.vue,先配置路由。还要获取id
+
+```
+ <router-link tag="li" :to="'/home/photoInfo'+item.id" v-for="item in list" :key="item.id">
+                  
+```
+
+2.由id来获取对应的对象
+
+```
+data(){
+            return {
+                id:this.$route.params.id,
+                photoInfo:{}
+            }
+        },
+        
+        getPhotoInfo(){
+                this.$axios.get('api/getimageInfo/'+this.id)
+                    .then( result => {
+                        if(result.data.status === 0){
+                            this.photoInfo = result.data.message[0];
+                        }
+                    })
+            },
+```
+
+3.获取缩略图的数据，运行npm i vue-preview -S,导入
+
+```
+import VuePreview from 'vue-preview'
+Vue.use(VuePreview);
+```
+
+
+
+```
+getThumbs(){
+                this.$axios.get('api/getthumimages/'+this.id)
+                    .then( result => {
+                        if(result.data.status === 0){
+                            //加工
+                            result.data.message.forEach( item => {
+                                item.msrc=item.src;
+                                item.w = 600;
+                                item.h = 600;
+                            })
+                            this.imgList = result.data.message;
+                        }
+                    })
+            },
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

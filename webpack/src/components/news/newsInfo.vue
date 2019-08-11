@@ -8,6 +8,7 @@
         <hr>
         <!--content-->
         <div v-html="newsInfo.content"></div>
+        <!--评论-->
         <comment :cmtid="id"></comment>
     </div>
 </template>
@@ -44,11 +45,13 @@
 <style scoped lang="less">
     .newsInfo_container{
         h3{
+            margin-left: 20%;
             font-size:16px;
             color:red;
         }
         .subtitle{
-
+            display: flex;
+            justify-content:space-between;
         }
     }
 </style>

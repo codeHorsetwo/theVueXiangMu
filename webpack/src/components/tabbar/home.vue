@@ -14,12 +14,16 @@
                     <span><img src="../../images/menu1.png" alt="" class="menu"></span>
                     <div class="mui-media-body">新闻资讯</div>
                     </router-link></li>
-                <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3"><a href="#">
+                <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3">
+                    <router-link to="/home/photoList">
                     <span ><img src="../../images/menu2.png" alt="" class="menu"></span>
-                    <div class="mui-media-body">图片分享</div></a></li>
-                <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3"><a href="#">
+                    <div class="mui-media-body">图片分享</div>
+                    </router-link></li>
+                <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3">
+                    <router-link to="/home/shopList">
                     <span><img src="../../images/menu3.png" alt="" class="menu"></span>
-                    <div class="mui-media-body">商品购买</div></a></li>
+                    <div class="mui-media-body">商品购买</div>
+                    </router-link></li>
                 <li class="mui-table-view-cell mui-media mui-col-xs-4 mui-col-sm-3"><a href="#">
                     <span><img src="../../images/menu4.png" alt="" class="menu"></span>
                     <div class="mui-media-body">留言反馈</div></a></li>
@@ -64,7 +68,7 @@
 
 <style scoped lang="less">
     .mint-swipe{
-    height: 200px;
+    height: 5rem;
         img{
              width:100%;
              height:200px;

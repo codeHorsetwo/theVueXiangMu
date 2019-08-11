@@ -1,0 +1,16 @@
+body{
+    background:#fff;
+}
+img[lazy=loading] {
+    width: 40px;
+    height: 300px;
+    margin: auto;
+}
+figure{
+    margin:10px 10px;
+    display:inline-block;
+}
+figure img{
+    width:100px;
+    height: 66px;
+}
